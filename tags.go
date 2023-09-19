@@ -20,8 +20,8 @@ func (st StructTag) Lookup(key string) (Tag, bool) {
 	if !ok {
 		return Tag{}, false
 	}
-	name, opts := parseTag(tag)
-	return Tag{Key: key, Name: name, Options: opts}, true
+	name, opts, found := parseTag(tag)
+	return Tag{Key: key, Name: name, Options: opts, hasLeadingComma: found}, true
 }
 
 // Tag represents a single struct's field tag associated with key in the tag string.
@@ -37,10 +37,17 @@ type Tag struct {
 	// Options is a remaining part of the value.
 	// i.e: `json:"field,omitempty,string"`. Here options is: "omitempty,string"
 	Options TagOptions
+
+	hasLeadingComma bool
 }
 
 func (tag Tag) String() string {
-	return tag.Key + `:"` + tag.Name + "," + string(tag.Options) + `"`
+	str := tag.Key + `:"` + tag.Name
+	if tag.hasLeadingComma {
+		str += "," + string(tag.Options)
+	}
+	str += `"`
+	return str
 }
 
 // TagOptions is the string following a comma in a struct field's
@@ -49,9 +56,9 @@ type TagOptions string
 
 // parseTag splits a struct field's tag into its name and
 // comma-separated options.
-func parseTag(tag string) (string, TagOptions) {
-	tag, opt, _ := strings.Cut(tag, ",")
-	return tag, TagOptions(opt)
+func parseTag(tag string) (string, TagOptions, bool) {
+	tag, opt, found := strings.Cut(tag, ",")
+	return tag, TagOptions(opt), found
 }
 
 // Contains reports whether a comma-separated list of options

@@ -7,6 +7,8 @@ package structtag
 import (
 	"reflect"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestGetStructTag(t *testing.T) {
@@ -44,5 +46,32 @@ func TestGetStructTag(t *testing.T) {
 	want := string(reflect.TypeOf(S{}).Field(0).Tag)
 	if want != got {
 		t.Fatalf(`tag = %q, want %s`, got, want)
+	}
+}
+
+func TestTag_string(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		i any
+	}{
+		{struct {
+			F string `species:"-"`
+		}{}},
+		{struct {
+			F string `species:"-,"`
+		}{}},
+	}
+
+	for i, tt := range tests {
+		f := reflect.TypeOf(tt.i).Field(0)
+		tag, ok := (StructTag)(f.Tag).Lookup("species")
+		if !ok {
+			t.Errorf("#%d not found tag %s", i, string(f.Tag))
+			continue
+		}
+		if !cmp.Equal(string(f.Tag), tag.String()) {
+			t.Errorf("#%d mismatch: %s", i, cmp.Diff(string(f.Tag), tag.String()))
+		}
 	}
 }

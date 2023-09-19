@@ -24,14 +24,11 @@ func Example() {
 	fmt.Println(jsonTag.Key)
 	fmt.Println(jsonTag.Name)
 	fmt.Println(jsonTag.Options.Contains("omitempty"))
-
-	fmt.Printf("%#v\n", jsonTag)
 	fmt.Println(jsonTag)
 
 	// Output:
 	// json
 	// field
 	// true
-	// structtag.Tag{Key:"json", Name:"field", Options:"omitempty,string"}
 	// json:"field,omitempty,string"
 }
